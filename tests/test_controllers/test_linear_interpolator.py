@@ -52,11 +52,6 @@ indexes = [1, 0]
 # Threshold ratio
 min_ratio = 1.10
 
-# Define arguments for this test
-parser = argparse.ArgumentParser()
-parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
-args = parser.parse_args()
-
 # Setup printing options for numbers
 np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
@@ -82,7 +77,7 @@ def step(env, action, current_torques):
 
 
 # Running the actual test #
-def test_linear_interpolator():
+def test_linear_interpolator(render=False):
 
     for controller_name in [None, "BASIC"]:  # None corresponds to robot's default controller
 
@@ -106,7 +101,7 @@ def test_linear_interpolator():
                 env = suite.make(
                     "Lift",
                     robots="Sawyer",
-                    has_renderer=args.render,  # by default, don't use on-screen renderer for visual validation
+                    has_renderer=render,  # by default, don't use on-screen renderer for visual validation
                     has_offscreen_renderer=False,
                     use_camera_obs=False,
                     horizon=10000,
@@ -162,7 +157,7 @@ def test_linear_interpolator():
                 # Run trajectory until the threshold condition is met
                 while abs(dstate[k][indexes[k]]) < abs(thresholds[k]):
                     _, summed_torques, current_torques = step(env, action, current_torques)
-                    if args.render:
+                    if render:
                         env.render()
 
                     # Update torques, timestep count, and state
@@ -192,4 +187,7 @@ def test_linear_interpolator():
 
 
 if __name__ == "__main__":
-    test_linear_interpolator()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
+    args = parser.parse_args()
+    test_linear_interpolator(render=args.render)

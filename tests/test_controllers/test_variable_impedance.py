@@ -41,14 +41,9 @@ d = 0.05
 kp_default = 150
 damping_default = 1  # critically damped
 
-# Define arguments for this test
-parser = argparse.ArgumentParser()
-parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
-args = parser.parse_args()
-
 
 # Running the actual test #
-def test_variable_impedance():
+def test_variable_impedance(render=False):
 
     for controller_name in ["OSC_POSE", "OSC_POSITION", "JOINT_POSITION"]:
 
@@ -74,7 +69,7 @@ def test_variable_impedance():
         env = suite.make(
             "Lift",
             robots="Sawyer",
-            has_renderer=args.render,  # by default, don't use on-screen renderer for visual validation
+            has_renderer=render,  # by default, don't use on-screen renderer for visual validation
             has_offscreen_renderer=False,
             use_camera_obs=False,
             horizon=10000,
@@ -122,7 +117,7 @@ def test_variable_impedance():
             print("\nTesting controller {} while sweeping {}...".format(controller_name, gain))
 
             # If rendering, set controller to front view to get best angle for viewing robot movements
-            if args.render:
+            if render:
                 env.viewer.set_camera(camera_id=0)
 
             # Keep track of relative changes in robot eef position
@@ -151,7 +146,7 @@ def test_variable_impedance():
 
                 # Take an environment step
                 env.step(action)
-                if args.render:
+                if render:
                     env.render()
 
                 # Update the current change in state
@@ -186,4 +181,7 @@ def test_variable_impedance():
 
 
 if __name__ == "__main__":
-    test_variable_impedance()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
+    args = parser.parse_args()
+    test_variable_impedance(render=args.render)
